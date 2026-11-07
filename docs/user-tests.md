@@ -80,3 +80,33 @@ then: The reply refers to my previous message
 status: pass
 date: 11/7/2026
 
+======================
+
+ticket: SCRUM-15 stop button
+given: A reply is streaming
+when: I look at the composer
+then: The button says Stop instead of Send
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-15 stop button
+given: A long reply is streaming
+when: I click Stop mid-reply
+then: Streaming ends, the text so far stays, no error appears, and the button is Send again
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-15 stop button
+given: A request has been sent
+when: I click Stop immediately after sending, before any reply is received
+then: No empty assistant bubble remains, and my message stays
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-15 stop button
+given: The previous test has just been done, I am viewing LM Studio dev logs
+when: I stop a reply
+then: The log shows generation stopped, and I can send another message
+status: pass
+date: 11/7/2026
+
