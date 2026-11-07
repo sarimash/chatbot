@@ -39,9 +39,9 @@ date: 11/7/2026
 ticket: SCRUM-13 models smoke test
 given: `docker compose up` is running, LM studio server not running
 when: I open http://localhost:8080 
-then: I should see an error message 502
+then: I see "Can't reach LM Studio. Is the server running?"
 status: pass
-date: 11/6/2026
+date: 11/7/2026
 
 ======================
 
@@ -132,3 +132,36 @@ when: I look at the picker
 then: The picker is disabled until the reply ends
 status: pass
 date: 11/7/2026
+
+======================
+
+ticket: SCRUM-17 errors
+given: App open, LM studio server then stopped
+when: I send a message
+then: The can't reach message appears and no empty bubble remains
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-17 errors
+given: LM Studio running with no model loaded (just-in-time loading disabled in server settings)
+when: I open the app
+then: The banner says no models found
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-17 errors
+given: Same as above, then I load a model
+when: I press Try Again
+then: The banner goes away and the picker lists the model
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-17 errors
+given: Page loading, LM Studio healthy
+when: I reload the page
+then: The banner doesn't flash before the model appears
+status: pass
+date: 11/7/2026
+
+======================
+
