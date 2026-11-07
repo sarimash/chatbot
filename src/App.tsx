@@ -49,6 +49,8 @@ function App() {
       if (err instanceof DOMException && err.name === 'AbortError') return
       setError(err instanceof Error ? err.message : 'Request failed')
     } finally {
+      // don't leave an empty bubble behind if request failed or was stopped early
+      setMessages((prev) => (prev[prev.length-1]?.content === '' ? prev.slice(0, -1) : prev))
       setLoading(false)
       controllerRef.current = null
     }
