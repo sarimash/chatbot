@@ -11,7 +11,7 @@ function App() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [systemPrompt, setSystemPrompt] = useState('')
+  const [systemPrompt, setSystemPrompt] = useState(() => load('systemPrompt', ''))
   
   const bottomRef = useRef<HTMLDivElement>(null)
   const controllerRef = useRef<AbortController | null>(null)
@@ -117,7 +117,10 @@ function App() {
           rows={3}
           value={systemPrompt}
           placeholder="e.g. You are a concise assistant. Keep answers short."
-          onChange={(e) => setSystemPrompt(e.target.value)}
+          onChange={(e) => {
+            setSystemPrompt(e.target.value)
+            save('systemPrompt', e.target.value)
+          }}
           className="mt-2 w-full resize-none rounded-lg border border-slate-300 bg-transparent p-2 dark:border-slate-600"
         />
       </details>
