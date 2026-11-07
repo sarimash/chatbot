@@ -21,7 +21,7 @@ function App() {
     if (!text || !model || loading) return
 
     const history: Message[] = [...messages, { role: 'user', content: text}]
-    setMessages([...messages, { role: 'user', content: text }])
+    setMessages([...history, { role: 'assistant', content: '' }])
     setInput('')
     setError(null)
     setLoading(true)
