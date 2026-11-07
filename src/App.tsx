@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { getModels, streamChat, type Message } from './api'
 
 function App() {
@@ -7,6 +7,7 @@ function App() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
   const model = models.find((id) => !id.includes('embed')) ?? ''
 
   useEffect(() => {
@@ -14,6 +15,10 @@ function App() {
       .then(setModels)
       .catch((err) => setError(err.message))
   }, [])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth'})
+  }, [messages])
   
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -60,6 +65,7 @@ function App() {
             {m.content}
           </div>
         ))}
+        <div ref={bottomRef} />
       </div>
 
       {error && <p className="py-2 text-red-600 dark:text-red-400">{error}</p>}
