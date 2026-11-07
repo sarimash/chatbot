@@ -202,3 +202,31 @@ date: 11/7/2026
 
 ======================
 
+ticket: SCRUM-19 System prompt
+given: Prompt: "Answer only in French" (and using a thinking model that respects the prompt)
+when: I send "Hello"
+then: The reply is in French
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-19 System prompt
+given: Prompt set
+when: I look at messages and devtools stored messages
+then: The prompt does not appear
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-19 System prompt
+given: Prompt set 
+when: I reload
+then: The prompt box still holds the prompt
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-19 System prompt
+given: Prompt cleared
+when: I send a message
+then: The model stops following the old instruction
+status: pass
+date: 11/7/2026
+
