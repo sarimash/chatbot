@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { getModels, streamChat, type Message } from './api'
+import { save, load } from './storage'
 
 function App() {
   // Models is a list of all models, while Model is the currently selected model. 
   const [models, setModels] = useState<string[]>([])
   const [model, setModel] = useState('')
   const [modelsReady, setModelsReady] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(() => load('messages', []))
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,6 +29,11 @@ function App() {
   useEffect(() => {
     loadModels()
   }, [])
+
+  useEffect(() => {
+    // Wait until streaming is done so we don't write on every token
+    if (!loading) save('messages', messages)
+  }, [messages, loading])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth'})
