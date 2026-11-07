@@ -11,6 +11,7 @@ function App() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [systemPrompt, setSystemPrompt] = useState(() => load('systemPrompt', ''))
   
   const bottomRef = useRef<HTMLDivElement>(null)
   const controllerRef = useRef<AbortController | null>(null)
@@ -55,7 +56,10 @@ function App() {
     controllerRef.current = controller
 
     try{
-      await streamChat(model, history, (token) => {
+      // The system prompt is sent with every request, but not stored in the visible history
+      const prompt = systemPrompt.trim()
+      const payload: Message[] = prompt ? [{role: 'system', content: prompt}, ...history] : history
+      await streamChat(model, payload, (token) => {
         setMessages((prev) => {
           const last = prev[prev.length -1]
           return [...prev.slice(0, -1), { ...last, content: last.content + token }]
@@ -106,6 +110,20 @@ function App() {
           New Chat
         </button>
       </header>
+
+      <details className="pb-2 text-sm">
+        <summary className="cursor-pointer text-slate-500">System Prompt</summary>
+        <textarea
+          rows={3}
+          value={systemPrompt}
+          placeholder="e.g. You are a concise assistant. Keep answers short."
+          onChange={(e) => {
+            setSystemPrompt(e.target.value)
+            save('systemPrompt', e.target.value)
+          }}
+          className="mt-2 w-full resize-none rounded-lg border border-slate-300 bg-transparent p-2 dark:border-slate-600"
+        />
+      </details>
 
       {modelsReady && models.length === 0 && (
         <div className="mb-2 flex items-center justify-between gap-2 rounded-lg bg-amber-100 p-3 text-sm text-amber-900 dark:bg-amber-900/30 dark:text-amber-100">

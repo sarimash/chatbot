@@ -1,4 +1,4 @@
-type Key = 'messages' | 'model'
+type Key = 'messages' | 'model' | 'systemPrompt'
 
 export function load<T>(key: Key, fallback: T): T {
     try {
