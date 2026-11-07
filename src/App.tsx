@@ -56,7 +56,10 @@ function App() {
     controllerRef.current = controller
 
     try{
-      await streamChat(model, history, (token) => {
+      // The system prompt is sent with every request, but not stored in the visible history
+      const prompt = systemPrompt.trim()
+      const payload: Message[] = prompt ? [{role: 'system', content: prompt}, ...history] : history
+      await streamChat(model, payload, (token) => {
         setMessages((prev) => {
           const last = prev[prev.length -1]
           return [...prev.slice(0, -1), { ...last, content: last.content + token }]
