@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { getModels, streamChat, type Message } from './api'
+import { save, load } from './storage'
 
 function App() {
   // Models is a list of all models, while Model is the currently selected model. 
   const [models, setModels] = useState<string[]>([])
   const [model, setModel] = useState('')
   const [modelsReady, setModelsReady] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(() => load('messages', []))
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -19,7 +20,8 @@ function App() {
       .then((ids) => {
         const chatModels = ids.filter((id) => !id.includes('embed'))
         setModels(chatModels)
-        setModel(chatModels[0] ?? '')
+        const saved = load('model', '')
+        setModel(chatModels.includes(saved) ? saved : (chatModels[0] ?? ''))
       })
       .catch((err) => setError(err.message))
       .finally(() => setModelsReady(true))
@@ -28,6 +30,11 @@ function App() {
   useEffect(() => {
     loadModels()
   }, [])
+
+  useEffect(() => {
+    // Wait until streaming is done so we don't write on every token
+    if (!loading) save('messages', messages)
+  }, [messages, loading])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth'})
@@ -73,11 +80,14 @@ function App() {
 
   return (
     <div className="mx-auto flex h-screen max-w-2xl flex-col p-4">
-      <header className="pb-2 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Chatbot</h1>
+      <header className="pb-2 flex items-center gap-2">
+        <h1 className="mr-auto text-2xl font-semibold">Chatbot</h1>
         <select
           value={model}
-          onChange={(e) => setModel(e.target.value)}
+          onChange={(e) => {
+            setModel(e.target.value)
+            save('model', e.target.value)
+          }}
           disabled={loading}
           className="rounded-lg border border-slate-300 bg-transparent p-1 text-sm dark:border-slate-600 dark:bg-slate-900"
         >
@@ -87,6 +97,14 @@ function App() {
             </option>
           ))}
         </select>
+        <button
+          type="button"
+          onClick={() => setMessages([])}
+          disabled={loading}
+          className="rounded-lg border border-slate-300 px-2 text-sm disabled:opacity-50 dark:border-slate-600"
+        >
+          New Chat
+        </button>
       </header>
 
       {modelsReady && models.length === 0 && (
