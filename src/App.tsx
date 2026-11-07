@@ -20,7 +20,8 @@ function App() {
       .then((ids) => {
         const chatModels = ids.filter((id) => !id.includes('embed'))
         setModels(chatModels)
-        setModel(chatModels[0] ?? '')
+        const saved = load('model', '')
+        setModel(chatModels.includes(saved) ? saved : (chatModels[0] ?? ''))
       })
       .catch((err) => setError(err.message))
       .finally(() => setModelsReady(true))
@@ -83,7 +84,10 @@ function App() {
         <h1 className="text-2xl font-semibold">Chatbot</h1>
         <select
           value={model}
-          onChange={(e) => setModel(e.target.value)}
+          onChange={(e) => {
+            setModel(e.target.value)
+            save('model', e.target.value)
+          }}
           disabled={loading}
           className="rounded-lg border border-slate-300 bg-transparent p-1 text-sm dark:border-slate-600 dark:bg-slate-900"
         >
