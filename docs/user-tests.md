@@ -165,3 +165,40 @@ date: 11/7/2026
 
 ======================
 
+ticket: SCRUM-18 Persistence
+given: A finished conversation
+when: I reload the page
+then: The same conversation is shown
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-18 Persistence
+given: I picked a non-default model
+when: I reload the page
+then: The same model is selected
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-18 Persistence
+given: A conversation exists
+when: I click New Chat
+then: The list is empty, and after a reload it stays empty
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-18 Persistence
+given: A reply is streaming
+when: I click New Chat
+then: Nothing happens; the button is disabled
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-18 Persistence
+given: DevTools open, Application tab
+when: I send a message
+then: The stored message updates once the reply ends, not on every token
+status: pass
+date: 11/7/2026
+
+======================
+
