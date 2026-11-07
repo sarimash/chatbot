@@ -110,3 +110,25 @@ then: The log shows generation stopped, and I can send another message
 status: pass
 date: 11/7/2026
 
+======================
+
+ticket: SCRUM-16 model picker
+given: LM Studio has an embedding model and a chat model
+when: I open the picker
+then: Only chat models are listed; embedding models are filtered out
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-16 model picker
+given: Two chat models are available
+when: I pick each model and send a message
+then: LM Studio's log shows the correct model handled each message
+status: pass
+date: 11/7/2026
+
+ticket: SCRUM-16 model picker
+given: A reply is streaming
+when: I look at the picker
+then: The picker is disabled until the reply ends
+status: pass
+date: 11/7/2026

@@ -2,7 +2,9 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { getModels, streamChat, type Message } from './api'
 
 function App() {
+  // Models is a list of all models, while Model is the currently selected model. 
   const [models, setModels] = useState<string[]>([])
+  const [model, setModel] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -10,11 +12,14 @@ function App() {
   
   const bottomRef = useRef<HTMLDivElement>(null)
   const controllerRef = useRef<AbortController | null>(null)
-  const model = models.find((id) => !id.includes('embed')) ?? ''
 
   useEffect(() => {
     getModels()
-      .then(setModels)
+      .then((ids) => {
+        const chatModels = ids.filter((id) => !id.includes('embed'))
+        setModels(chatModels)
+        setModel(chatModels[0] ?? '')
+      })
       .catch((err) => setError(err.message))
   }, [])
 
@@ -62,9 +67,20 @@ function App() {
 
   return (
     <div className="mx-auto flex h-screen max-w-2xl flex-col p-4">
-      <header className="pb-2">
+      <header className="pb-2 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Chatbot</h1>
-        <p className="text-sm text-slate-500">{model}</p>
+        <select
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          disabled={loading}
+          className="rounded-lg border border-slate-300 bg-transparent p-1 text-sm dark:border-slate-600 dark:bg-slate-900"
+        >
+          {models.map((id) => (
+            <option key={id} value={id}>
+              {id}
+            </option>
+          ))}
+        </select>
       </header>
 
       <div className="flex-1 space-y-3 overflow-y-auto py-2">
