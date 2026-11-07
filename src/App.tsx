@@ -80,8 +80,8 @@ function App() {
 
   return (
     <div className="mx-auto flex h-screen max-w-2xl flex-col p-4">
-      <header className="pb-2 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Chatbot</h1>
+      <header className="pb-2 flex items-center gap-2">
+        <h1 className="mr-auto text-2xl font-semibold">Chatbot</h1>
         <select
           value={model}
           onChange={(e) => {
@@ -97,6 +97,14 @@ function App() {
             </option>
           ))}
         </select>
+        <button
+          type="button"
+          onClick={() => setMessages([])}
+          disabled={loading}
+          className="rounded-lg border border-slate-300 px-2 text-sm disabled:opacity-50 dark:border-slate-600"
+        >
+          New Chat
+        </button>
       </header>
 
       {modelsReady && models.length === 0 && (
