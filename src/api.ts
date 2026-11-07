@@ -16,11 +16,13 @@ export async function streamChat(
     model: string,
     messages: Message[],
     onToken: (token: string) => void,
+    signal?: AbortSignal,
 ) {
     const res = await fetch('/api/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json'},
         body: JSON.stringify({ model, messages, stream: true }),
+        signal,
     })
     if (!res.ok || !res.body) throw new Error(`LM Studio returned ${res.status}`)
 

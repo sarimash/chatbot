@@ -7,7 +7,9 @@ function App() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
   const bottomRef = useRef<HTMLDivElement>(null)
+  const controllerRef = useRef<AbortController | null>(null)
   const model = models.find((id) => !id.includes('embed')) ?? ''
 
   useEffect(() => {
@@ -31,18 +33,29 @@ function App() {
     setError(null)
     setLoading(true)
 
+    const controller = new AbortController()
+    controllerRef.current = controller
+
     try{
       await streamChat(model, history, (token) => {
         setMessages((prev) => {
           const last = prev[prev.length -1]
           return [...prev.slice(0, -1), { ...last, content: last.content + token }]
         })
-      })
+      }, controller.signal,
+    )
     } catch (err) {
+      // Stopping on purpose isn't an error, keep whatever text has arrived
+      if (err instanceof DOMException && err.name === 'AbortError') return
       setError(err instanceof Error ? err.message : 'Request failed')
     } finally {
       setLoading(false)
+      controllerRef.current = null
     }
+  }
+
+  function handleStop() {
+    controllerRef.current?.abort()
   }
 
   return (
@@ -84,13 +97,23 @@ function App() {
           }}
           className="flex-1 resize-none rounded-lg border border-slate-300 bg-transparent p-2 dark:border-slate-600"
         />
-        <button
-          type="submit"
-          disabled={!input.trim() || !model || loading}
-          className="rounded-lg bg-blue-600 px-4 text-white disabled:opacity-50"
-        >
-          Send
-        </button>
+        {loading? (
+          <button
+            type="button"
+            onClick={handleStop}
+            className="rounded-lg bg-slate-700 px-4 text-white"
+          >
+            Stop
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={!input.trim() || !model}
+            className="rounded-lg bg-blue-600 px-4 text-white disabled:opacity-50"
+          >
+            Send
+          </button>
+        )}
       </form>
     </div>
   )
