@@ -5,6 +5,7 @@ function App() {
   // Models is a list of all models, while Model is the currently selected model. 
   const [models, setModels] = useState<string[]>([])
   const [model, setModel] = useState('')
+  const [modelsReady, setModelsReady] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -13,7 +14,7 @@ function App() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const controllerRef = useRef<AbortController | null>(null)
 
-  useEffect(() => {
+  function loadModels() {
     getModels()
       .then((ids) => {
         const chatModels = ids.filter((id) => !id.includes('embed'))
@@ -21,6 +22,11 @@ function App() {
         setModel(chatModels[0] ?? '')
       })
       .catch((err) => setError(err.message))
+      .finally(() => setModelsReady(true))
+  }
+  
+  useEffect(() => {
+    loadModels()
   }, [])
 
   useEffect(() => {
@@ -83,6 +89,23 @@ function App() {
         </select>
       </header>
 
+      {modelsReady && models.length === 0 && (
+        <div className="mb-2 flex items-center justify-between gap-2 rounded-lg bg-amber-100 p-3 text-sm text-amber-900 dark:bg-amber-900/30 dark:text-amber-100">
+          <p>{error ?? 'No models found. Load one in LM studio, then try again.'}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setError(null)
+              setModelsReady(false)
+              loadModels()
+            }}
+            className="rounded-lg border border-amber-700 px-3 py-1"
+          >
+            Try again
+        </button>
+      </div>
+      )}
+
       <div className="flex-1 space-y-3 overflow-y-auto py-2">
         {messages.map((m, i) => (
           <div
@@ -99,7 +122,7 @@ function App() {
         <div ref={bottomRef} />
       </div>
 
-      {error && <p className="py-2 text-red-600 dark:text-red-400">{error}</p>}
+      {error && models.length > 0 && <p className="py-2 text-red-600 dark:text-red-400">{error}</p>}
 
       <form onSubmit={handleSubmit} className="flex gap-2 pt-2">
         <textarea

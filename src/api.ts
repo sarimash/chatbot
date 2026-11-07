@@ -5,9 +5,23 @@ export type Message = {
     content: string
 }
 
+async function describeError(res: Response): Promise<string> {
+    if (res.status === 502 || res.status === 503 || res.status === 504) {
+        return "Can't reach LM studio. Is the server running?"
+    }
+    try {
+        const body = await res.json()
+        const message = typeof body.error === 'string' ? body.error : body.error?.message
+        if (message) return message
+    } catch {
+        // if the body isn't JSON, fall through
+    }
+    return `LM Studio returned ${res.status}`
+}
+
 export async function getModels(): Promise<string[]> {
     const res = await fetch('/api/models')
-    if (!res.ok) throw new Error(`LM Studio returned ${res.status}`)
+    if (!res.ok) throw new Error(await describeError(res))
     const body = await res.json()
     return body.data.map((m: { id: string }) => m.id)
 }
@@ -24,7 +38,7 @@ export async function streamChat(
         body: JSON.stringify({ model, messages, stream: true }),
         signal,
     })
-    if (!res.ok || !res.body) throw new Error(`LM Studio returned ${res.status}`)
+    if (!res.ok || !res.body) throw new Error(await describeError(res))
 
         const reader = res.body.getReader()
         const decoder = new TextDecoder()
