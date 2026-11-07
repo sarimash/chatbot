@@ -10,6 +10,22 @@ A small chatt app that talks to a language model running on your own local machi
 - Conversation, selected model and system prompt are remembered across reloads
 - Clear messages when LM Studio is unreachable or has no model loaded
 
+## How it works
+```mermaid
+flowchart LR
+  browser["Browser (React app)"] -->|"localhost:8080"| nginx
+  subgraph docker["Docker container"]
+    nginx["nginx: serves the build, proxies /api/"]
+  end
+  nginx -->|"host.docker.internal:1234/v1/ (streamed)"| lms["LM Studio on the host"]
+```
+
+The browser only talks to nginx. nginx serves the built React and forwards `/api/*` to LM Studio's `/v1/*`, with `proxy_buffering off` so tokens reach the browser as they are generated.
+
+- **Streaming:** `fetch` with `stream: true`, read through a `ReadableStream` reader. Lines are parsed in `src/sse.ts`, which hands back any half-received line to be joined with the next chunk.
+- **Stop:** an `AbortController` cancels the request. Text that has already arrived is kept.
+- **System prompt:** added to each request on the way out, never stored with the messages.
+
 ## Run it with Docker
 
 1. Start LM Studio's server and load a model (see [Windows setup notes](#windows-setup-notes)).
