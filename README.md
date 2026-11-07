@@ -1,32 +1,31 @@
-# React + TypeScript + Vite
+# Chatbot
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A small chatt app that talks to a language model running on your own local machine through [LM Studio](https://lmstudio.ai)'s OpenAI-compatible API. Replies stream in token-by-token, and nothing leaves your computer.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Streaming replies, with a Stop button that cancels the request
+- Model picker (embedding models are hidden)
+- Editable system prompt, sent with every request but kept out of the chat history
+- Conversation, selected model and system prompt are remembered across reloads
+- Clear messages when LM Studio is unreachable or has no model loaded
 
-## React Compiler
+## Run it with Docker
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Start LM Studio's server and load a model (see [Windows setup notes](#windows-setup-notes)).
+2. From this folder:
 
-## Expanding the Oxlint configuration
+  ```
+  docker compose up --build
+  ```
+3. Open http://localhost:8080 .
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Run it for development
+Needs Node 22.
+```
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Open http://localhost:5173 . The Vite dev server proxies `/api` to LM Studio on `127.0.0.1:1234`, the same way nginx does in Docker. 
+`npm run build` type-checks and builds, and `npm run lint` fails on any warning.
