@@ -24,3 +24,15 @@ when: I open http://localhost:8080
 then: I see a bold white "Chatbot" heading on a dark background
 status: pass
 
+ticket: SCRUM-13 models smoke test
+given: `npm run dev` is running, LM studio server running and a model loaded
+when: I open http://localhost:8080 
+then: I should see the model IDs
+status: pass
+
+ticket: SCRUM-13 models smoke test
+given: `npm run dev` is running, LM studio server not running
+when: I open http://localhost:8080 
+then: I should see an error message 502
+status: pass
+
