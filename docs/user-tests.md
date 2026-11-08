@@ -238,3 +238,31 @@ when: I run npm test
 then: All tests pass
 status: pass
 date: 11/7/2026
+
+======================
+
+Command for SCRUM-22 tasks: 
+docker compose exec api node -e "fetch('http://localhost:3000/tools/fetch-page', {method:'POST', body: JSON.stringify({url:'https://example.com'})}).then(r => r.text()).then(console.log)"
+
+
+ticket: SCRUM-22 Tests
+given: docker compose up --build is running
+when: I enter the command: 
+then: I get JSON with the title “Example Domain” and some text
+status: pass
+date: 11/8/2026
+
+ticket: SCRUM-22 Tests
+given: docker compose up --build is running
+when: I enter the command with the URL of an image
+then: I get a clear error, not a crash
+status: pass
+date: 11/8/2026
+
+ticket: SCRUM-22 Tests
+given: docker compose up --build is running
+when: I enter the command with {url:'not a url'}
+then: I get an invalid-URL error, and the service still responds
+status: pass
+date: 11/8/2026
+

@@ -1,0 +1,17 @@
+{
+    "name": "chatbot-api",
+    "private": "true",
+    "type": "module",
+    "scripts": {
+        "dev": "node --watch src/server.ts",
+        "start": "node src/server.ts",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "cheerio": "^1.2.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.20.5",
+        "typescript": "^7.0.2"
+    }
+}
