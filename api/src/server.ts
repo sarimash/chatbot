@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { FetchPageError } from './errors.ts'
-import { fetchPage } from './fetch-page.ts'
+import { safeFetch } from './safe-fetch.ts'
+import { extractText } from './extract.ts'
 
 const PORT = Number(process.env.PORT ?? 3000)
 const MAX_BODY_BYTES = 10_000
@@ -36,7 +37,7 @@ const server = createServer(async (req, res) => {
         if (typeof url !== 'string') {
             throw new FetchPageError('Send a JSON body like {"url": "https://example.com"}', 400)
         }
-        send(res, 200, await fetchPage(url))
+        send(res, 200, extractText(await safeFetch(url)))
     } catch (err) {
         if (err instanceof FetchPageError) return send(res, err.status, { error: err.message })
         console.error(err)
