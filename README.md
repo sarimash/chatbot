@@ -2,6 +2,8 @@
 
 A small chatt app that talks to a language model running on your own local machine through [LM Studio](https://lmstudio.ai)'s OpenAI-compatible API. Replies stream in token-by-token, and nothing leaves your computer.
 
+![Chatbot screenshot](docs/strawberry.png)
+
 ## Features
 
 - Streaming replies, with a Stop button that cancels the request
