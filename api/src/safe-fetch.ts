@@ -7,9 +7,9 @@ import { request as httpsRequest, type RequestOptions } from 'node:https'
 
 const TIMEOUT_MS = 10_000
 const MAX_REDIRECTS = 3
+const MAX_BYTES = 2 * 1024 * 1024
 
 const bareHost = (url: URL) => url.hostname.replace(/^\[|\]$/g, '')
-)
 
 export function parseUrl(raw: string, base?: URL): URL {
     let url: URL
@@ -49,7 +49,7 @@ export async function resolveAddress(url: URL): Promise<string> {
 }
 
 // connect to the address we already checked, so a second DNS server can't swap in a private one
-function get(url: URL, address string, signal: AbortSignal): Primose<IncomingMessage> {
+function get(url: URL, address: string, signal: AbortSignal): Promise<IncomingMessage> {
     const isHttps = url.protocol === 'https:'
     const options: RequestOptions = {
         host: address,
@@ -76,15 +76,42 @@ function get(url: URL, address string, signal: AbortSignal): Primose<IncomingMes
     })
 }
 
-async function readText(res: IncomingMessage): Promise<string> {
+const tooLarge = () => new FetchPageError('The page is larger than 2 MB', 413)
+
+async function readText(res: IncomingMessage, signal: AbortSignal): Promise<string> {
     const type = (res.headers['content-type'] ?? '').split(';')[0].trim().toLowerCase()
     if (type !== 'text/html' && type !== 'text/plain') {
         res.destroy()
         throw new FetchPageError('Only HTML and plain text pages are supported', 415)
     }
 
+    const encoding = res.headers['content-encoding']
+    if (encoding && encoding !== 'identity') {
+        res.destroy()
+        throw new FetchPageError('Compressed responses are not supported', 415)
+    }
+
+    if (Number(res.headers['content-length']) > MAX_BYTES) {
+        res.destroy()
+        throw tooLarge()
+    }
+
     const chunks: Buffer[] = []
-    for await (const chunk of res) chunks.push(chunk)
+    let size = 0
+    try {
+        for await (const chunk of res) {
+            size += chunk.length
+            if (size > MAX_BYTES) {
+                res.destroy()
+                throw tooLarge()
+            }
+            chunks.push(chunk)
+        }
+    } catch (err) {
+        if (err instanceof FetchPageError) throw err
+        if (signal.aborted) throw new FetchPageError('The page took too long to respond', 504)
+        throw new FetchPageError('The connection was cut off', 502)
+    }
     return Buffer.concat(chunks).toString('utf-8')
 }
 
