@@ -230,3 +230,11 @@ then: The model stops following the old instruction
 status: pass
 date: 11/7/2026
 
+======================
+
+ticket: SCRUM-21 Tests
+given: A fresh clone after npm install
+when: I run npm test
+then: All tests pass
+status: pass
+date: 11/7/2026
