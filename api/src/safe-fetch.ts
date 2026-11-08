@@ -6,6 +6,7 @@ import { request as httpRequest, type IncomingMessage } from 'node:http'
 import { request as httpsRequest, type RequestOptions } from 'node:https'
 
 const TIMEOUT_MS = 10_000
+const MAX_REDIRECTS = 3
 
 const bareHost = (url: URL) => url.hostname.replace(/^\[|\]$/g, '')
 )
@@ -90,13 +91,24 @@ async function readText(res: IncomingMessage): Promise<string> {
 export async function safeFetch(rawUrl: string): Promise<string> {
     const signal = AbortSignal.timeout(TIMEOUT_MS)
     const url = parseUrl(rawUrl)
-    const address = await resolveAddress(url)
-    const res = await get(url, address, signal)
 
-    const status = res.statusCode ?? 0
-    if (status < 200 || status >= 300) {
-        res.resume()
-        throw new FetchPageError(`The page returned ${status}`, 502)
+    for (let redirects = 0; redirects <= MAX_REDIRECTS; redirects++) {
+        // every redirect checked from scratch, so a bad url can't sneak in via redirect
+        const address = await resolveAddress(url)
+        const res = await get(url, address, signal)
+        const status = res.statusCode ?? 0
+
+        if (status >= 300 && status < 400 && res.headers.location) {
+            res.resume()
+            url = parseUrl(res.headers.location, url)
+            continue
+        }
+        if (status < 200 || status >= 300) {
+            res.resume()
+            throw new FetchPageError(`The page returned ${status}`, 502)
+        }
+        return readText(res)
     }
-    return readText(res)
+
+    throw new FetchPageError('Too many redirects', 502)
 }
