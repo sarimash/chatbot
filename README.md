@@ -47,6 +47,7 @@ npm run dev
 
 Open http://localhost:5173 . The Vite dev server proxies `/api` to LM Studio on `127.0.0.1:1234`, the same way nginx does in Docker. 
 `npm run build` type-checks and builds, and `npm run lint` fails on any warning.
+`npm test` runs the unit and component tests
 
 ## Windows setup notes
 
