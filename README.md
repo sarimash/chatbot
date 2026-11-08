@@ -1,6 +1,6 @@
 # Chatbot
 
-A small chatt app that talks to a language model running on your own local machine through [LM Studio](https://lmstudio.ai)'s OpenAI-compatible API. Replies stream in token-by-token, and nothing leaves your computer.
+A small chat app that talks to a language model running on your own local machine through [LM Studio](https://lmstudio.ai)'s OpenAI-compatible API. Replies stream in token-by-token, and nothing leaves your computer.
 
 ![Chatbot screenshot](docs/strawberry.png)
 
@@ -17,7 +17,7 @@ A small chatt app that talks to a language model running on your own local machi
 flowchart LR
   browser["Browser (React app)"] -->|"localhost:8080"| nginx
   subgraph docker["Docker container"]
-    nginx["nginx: serves the build, proxies /api/"]
+    nginx["nginx: serve build, proxy /api/"]
   end
   nginx -->|"host.docker.internal:1234/v1/ (streamed)"| lms["LM Studio on the host"]
 ```
