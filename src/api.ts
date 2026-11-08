@@ -54,3 +54,30 @@ export async function streamChat(
             if (parsed.done) return
     }
 }
+
+export type Page = {
+    title: string
+    text: string
+    truncated: boolean
+}
+
+async function describeToolError(res: Response): Promise<string> {
+    try {
+        const body = await res.json()
+        if (typeof body.error === 'string') return body.error
+    } catch {
+        // not JSON, so the request didn't make it to api service
+    } 
+    return "Can't reach the page fetcher. Is the api service running?"
+}
+
+export async function fetchPage(url: string, signal?: AbortSignal): Promise<Page> {
+    const res = await fetch('/tools/fetch-page', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+        signal,
+    })
+    if (!res.ok) throw new Error(await describeToolError(res))
+    return res.json()
+}
