@@ -266,3 +266,40 @@ then: I get an invalid-URL error, and the service still responds
 status: pass
 date: 11/8/2026
 
+======================
+
+Instructions for SCRUM-23 tasks: 
+    req.json in root is used for testing. Update the URL with each case from When, run the command from under this description, and provide screenshots from server (status code), test (error description), and proof of current URL being tested. 
+
+Command: curl.exe -X POST http://localhost:8080/tools/fetch-page -H "Content-Type: application/json" -d "@req.json"
+
+ticket: SCRUM-23 SSRF
+given: docker compose up --build is running, LM studio serving
+when: URL in req.json set to "http://host.docker.internal:1234/v1/models" and "http://127.0.0.1:1234/v1/models"
+then: Both return 403 "That address is not allowed" (meaning LM Studio is not exposed)
+status: pass
+date: 11/8/2026
+
+ticket: SCRUM-23 SSRF
+given: Same as above
+when: URL in req.json set to http://169.254.169.254/, http://2130706433:1234/, http://[::1]:1234/
+then: All return 403 "That address is not allowed" 
+status: pass
+date: 11/8/2026
+
+ticket: SCRUM-23 SSRF
+given: docker compose up --build is running, LM studio serving
+when: URL in req.json set to file:///etc/passwd and http://user:pw@example.com/
+then: Both return 400. "Only http and https URLs are allowed" and "URLs with a username or password are not allowed"
+status: pass
+date: 11/8/2026
+
+ticket: SCRUM-23 SSRF
+given: docker compose up --build is running, LM studio serving
+when: URL in req.json set to https://example.com/
+then: Title and text are appropriately returned, with status 200
+status: pass
+date: 11/8/2026
+
+======================
+
