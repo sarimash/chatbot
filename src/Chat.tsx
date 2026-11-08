@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { getModels, streamChat, type Message } from './api'
+import { streamChat, type Message } from './api'
 import { save, load } from './storage'
 
-function Chat() {
+function Chat({ model }: { model: string }) {
   // Models is a list of all models, while Model is the currently selected model. 
-  const [models, setModels] = useState<string[]>([])
-  const [model, setModel] = useState('')
-  const [modelsReady, setModelsReady] = useState(false)
   const [messages, setMessages] = useState<Message[]>(() => load('messages', []))
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -15,22 +12,6 @@ function Chat() {
   
   const bottomRef = useRef<HTMLDivElement>(null)
   const controllerRef = useRef<AbortController | null>(null)
-
-  function loadModels() {
-    getModels()
-      .then((ids) => {
-        const chatModels = ids.filter((id) => !id.includes('embed'))
-        setModels(chatModels)
-        const saved = load('model', '')
-        setModel(chatModels.includes(saved) ? saved : (chatModels[0] ?? ''))
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setModelsReady(true))
-  }
-  
-  useEffect(() => {
-    loadModels()
-  }, [])
 
   useEffect(() => {
     // Wait until streaming is done so we don't write on every token
@@ -83,24 +64,21 @@ function Chat() {
   }
 
   return (
-    <div className="mx-auto flex h-screen max-w-2xl flex-col p-4">
-      <header className="pb-2 flex items-center gap-2">
-        <h1 className="mr-auto text-2xl font-semibold">Chatbot</h1>
-        <select
-          value={model}
-          onChange={(e) => {
-            setModel(e.target.value)
-            save('model', e.target.value)
-          }}
-          disabled={loading}
-          className="rounded-lg border border-slate-300 bg-transparent p-1 text-sm dark:border-slate-600 dark:bg-slate-900"
-        >
-          {models.map((id) => (
-            <option key={id} value={id}>
-              {id}
-            </option>
-          ))}
-        </select>
+    <div>
+      <div className="pb-2 flex items-center gap-2">
+        <details className="flex-1">
+          <summary className="cursor-pointer text-slate-500">System Prompt</summary>
+          <textarea
+            rows={3}
+            value={systemPrompt}
+            placeholder="e.g. You are a concise assistant. Keep answers short."
+            onChange={(e) => {
+              setSystemPrompt(e.target.value)
+              save('systemPrompt', e.target.value)
+            }}
+            className="mt-2 w-full resize-none rounded-lg border border-slate-300 bg-transparent p-2 dark:border-slate-600"
+          />
+        </details>
         <button
           type="button"
           onClick={() => setMessages([])}
@@ -109,39 +87,8 @@ function Chat() {
         >
           New Chat
         </button>
-      </header>
-
-      <details className="pb-2 text-sm">
-        <summary className="cursor-pointer text-slate-500">System Prompt</summary>
-        <textarea
-          rows={3}
-          value={systemPrompt}
-          placeholder="e.g. You are a concise assistant. Keep answers short."
-          onChange={(e) => {
-            setSystemPrompt(e.target.value)
-            save('systemPrompt', e.target.value)
-          }}
-          className="mt-2 w-full resize-none rounded-lg border border-slate-300 bg-transparent p-2 dark:border-slate-600"
-        />
-      </details>
-
-      {modelsReady && models.length === 0 && (
-        <div className="mb-2 flex items-center justify-between gap-2 rounded-lg bg-amber-100 p-3 text-sm text-amber-900 dark:bg-amber-900/30 dark:text-amber-100">
-          <p>{error ?? 'No models found. Load one in LM studio, then try again.'}</p>
-          <button
-            type="button"
-            onClick={() => {
-              setError(null)
-              setModelsReady(false)
-              loadModels()
-            }}
-            className="rounded-lg border border-amber-700 px-3 py-1"
-          >
-            Try again
-        </button>
       </div>
-      )}
-
+      
       <div className="flex-1 space-y-3 overflow-y-auto py-2">
         {messages.map((m, i) => (
           <div
@@ -158,7 +105,7 @@ function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      {error && models.length > 0 && <p className="py-2 text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="py-2 text-red-600 dark:text-red-400">{error}</p>}
 
       <form onSubmit={handleSubmit} className="flex gap-2 pt-2">
         <textarea
