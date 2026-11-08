@@ -22,7 +22,7 @@ export function parseUrl(raw: string, base?: URL): URL {
         throw new FetchPageError('Only http and https URLs are allowed', 400)
     }
     if (url.username || url.password) {
-        throw new FetchPageError('URLs with a username or password are not allowed')
+        throw new FetchPageError('URLs with a username or password are not allowed', 400)
     }
     return url
 }
