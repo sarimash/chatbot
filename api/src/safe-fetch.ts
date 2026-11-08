@@ -2,6 +2,10 @@ import { FetchPageError } from './errors.ts'
 import { lookup } from 'node:dns/promises'
 import { isIP } from 'node:net'
 import { isBlockedAddress } from './ip.ts'
+import { request as httpRequest, type IncomingMessage } from 'node:http'
+import { request as httpsRequest, type RequestOptions } from 'node:https'
+
+const TIMEOUT_MS = 10_000
 
 const bareHost = (url: URL) => url.hostname.replace(/^\[|\]$/g, '')
 )
@@ -43,3 +47,56 @@ export async function resolveAddress(url: URL): Promise<string> {
     return addresses.find((address) => isIP(address) === 4) ?? addresses[0]
 }
 
+// connect to the address we already checked, so a second DNS server can't swap in a private one
+function get(url: URL, address string, signal: AbortSignal): Primose<IncomingMessage> {
+    const isHttps = url.protocol === 'https:'
+    const options: RequestOptions = {
+        host: address,
+        port: url.port || (isHttps ? 443 : 80),
+        path: url.pathname + url.search,
+        headers: {
+            Host: url.host,
+            'User-Agent': 'chatbot-summarizer',
+            Accept: 'text/html,text/plain;q=0.9',
+            'Accept-Encoding': 'identity',
+        },
+        // The certificate is checked against the name in the URL, not the IP
+        servername: isIP(bareHost(url)) ? undefined : bareHost(url),
+        signal,
+    }
+
+    return new Promise((resolve, reject) => {
+        const req = isHttps ? httpsRequest(options, resolve) : httpRequest(options, resolve)
+        req.on('error', () => {
+            if (signal.aborted) reject(new FetchPageError('The page took too long to respond', 504))
+            else reject(new FetchPageError('Could not reach that address', 502))
+        })
+        req.end()
+    })
+}
+
+async function readText(res: IncomingMessage): Promise<string> {
+    const type = (res.headers['content-type'] ?? '').split(';')[0].trim().toLowerCase()
+    if (type !== 'text/html' && type !== 'text/plain') {
+        res.destroy()
+        throw new FetchPageError('Only HTML and plain text pages are supported', 415)
+    }
+
+    const chunks: Buffer[] = []
+    for await (const chunk of res) chunks.push(chunk)
+    return Buffer.concat(chunks).toString('utf-8')
+}
+
+export async function safeFetch(rawUrl: string): Promise<string> {
+    const signal = AbortSignal.timeout(TIMEOUT_MS)
+    const url = parseUrl(rawUrl)
+    const address = await resolveAddress(url)
+    const res = await get(url, address, signal)
+
+    const status = res.statusCode ?? 0
+    if (status < 200 || status >= 300) {
+        res.resume()
+        throw new FetchPageError(`The page returned ${status}`, 502)
+    }
+    return readText(res)
+}
