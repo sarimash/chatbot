@@ -347,3 +347,12 @@ date: 11/8/2026
 
 ======================
 
+ticket: SCRUM-25 Automated api tests
+given: A fresh clone
+when: I run npm test in root
+then: All tests should pass (8 test files, 104 tests)
+status: pass
+date: 11/8/2026
+
+======================
+
