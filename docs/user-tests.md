@@ -303,3 +303,47 @@ date: 11/8/2026
 
 ======================
 
+ticket: SCRUM-24 Summarize Tab
+given: Entire stack is running
+when: I paste a news or blog article URL and press Summarize
+then: "Fetching the page..." shows, then a short summary streams in under the title
+status: pass
+date: 11/8/2026
+
+ticket: SCRUM-24 Summarize Tab
+given: A summary is streaming
+when: I press stop
+then: It ends, the text so far stays, and there's no error
+status: pass
+date: 11/8/2026
+
+ticket: SCRUM-24 Summarize Tab
+given: Stack is running
+when: I enter http://host.docker.internal:1234/
+then: "Address is not allowed" error
+status: pass
+date: 11/8/2026
+
+ticket: SCRUM-24 Summarize Tab
+given: Entire stack is running, then docker compose stop api
+when: I summarize any URL
+then: "Can't reach the page fetcher. Is the api service running?" error appears
+status: pass
+date: 11/8/2026
+
+ticket: SCRUM-24 Summarize Tab
+given: A chat reply is streaming
+when: I switch to the summary tab and back
+then: The chat reply kept streaming and is intact
+status: pass
+date: 11/8/2026
+
+ticket: SCRUM-24 Summarize Tab
+given: Stack is running
+when: I summarize a very long article
+then: The “only the first part” notice appears
+status: pass
+date: 11/8/2026
+
+======================
+
