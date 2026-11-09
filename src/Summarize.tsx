@@ -63,6 +63,7 @@ function Summarize({ model }: { model: string }) {
                 />
                 {status === 'idle' ? (
                     <button
+                      key="summarize"
                       type="submit"
                       disabled={!url.trim() || !model}
                       className="rounded-lg bg-blue-600 px-4 text-white disabled:opacity-50"
@@ -71,6 +72,7 @@ function Summarize({ model }: { model: string }) {
                     </button>
                 ) : (
                   <button
+                    key="stop"
                     type="button"
                     onClick={() => controllerRef.current?.abort()}
                     className="rounded-lg bg-slate-700 px-4 text-white"
