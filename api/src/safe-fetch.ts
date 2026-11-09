@@ -117,7 +117,7 @@ async function readText(res: IncomingMessage, signal: AbortSignal): Promise<stri
 
 export async function safeFetch(rawUrl: string): Promise<string> {
     const signal = AbortSignal.timeout(TIMEOUT_MS)
-    const url = parseUrl(rawUrl)
+    let url = parseUrl(rawUrl)
 
     for (let redirects = 0; redirects <= MAX_REDIRECTS; redirects++) {
         // every redirect checked from scratch, so a bad url can't sneak in via redirect
@@ -134,7 +134,7 @@ export async function safeFetch(rawUrl: string): Promise<string> {
             res.resume()
             throw new FetchPageError(`The page returned ${status}`, 502)
         }
-        return readText(res)
+        return readText(res, signal)
     }
 
     throw new FetchPageError('Too many redirects', 502)
